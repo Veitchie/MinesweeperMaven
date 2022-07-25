@@ -24,7 +24,6 @@ public class GUI extends JFrame implements MouseListener, ActionListener {
     public int buttonSize = 40;
     public int border = 1;
     public BetterButton[][] buttons;
-    public Thread audioThread;
 
     public JPanel gameArea = new JPanel();
     public JPanel gameScreen = new JPanel();
@@ -39,7 +38,6 @@ public class GUI extends JFrame implements MouseListener, ActionListener {
     public JButton newGame = new JButton("New Game");
     public long startTime;
     public ActionListener timerAction;
-    public ActionListener graphicAction;
     public Clip audioClip;
 
     public JButton easy = new JButton("EASY");
@@ -136,19 +134,8 @@ public class GUI extends JFrame implements MouseListener, ActionListener {
         //Add all elements to gameScreen
         this.add(gameScreen);
 
-        timerAction = new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                getTime();
-            }
-        };
-        graphicAction = new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                updateBoard();
-            }
-        };
-
-        timer = new Timer(1000,timerAction);
-        graphicsTimer = new Timer(250,graphicAction);
+        timer = new Timer(1000,e -> getTime());
+        graphicsTimer = new Timer(250,e -> updateBoard());
 
         this.add(gameScreen);
         this.setVisible(true);
@@ -173,31 +160,20 @@ public class GUI extends JFrame implements MouseListener, ActionListener {
     }
 
     public synchronized void playSound(final String url) {
-        if (audioThread != null) {
-            if (audioThread.isAlive()) {
-                audioThread.interrupt();
+
+        try {
+            Clip clip = AudioSystem.getClip();
+            AudioInputStream inputStream = AudioSystem.getAudioInputStream(
+                    GUI.class.getResourceAsStream("sounds/" + url));
+            clip.open(inputStream);
+            clip.start();
+            while(clip.getMicrosecondLength() != clip.getMicrosecondPosition())
+            {
             }
+            clip.stop();
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
         }
-        audioThread = new Thread(new Runnable() {
-            // The wrapper thread is unnecessary, unless it blocks on the
-            // Clip finishing; see comments.
-            public void run() {
-                try {
-                    Clip clip = AudioSystem.getClip();
-                    AudioInputStream inputStream = AudioSystem.getAudioInputStream(
-                            GUI.class.getResourceAsStream("sounds/" + url));
-                    clip.open(inputStream);
-                    clip.start();
-                    while(clip.getMicrosecondLength() != clip.getMicrosecondPosition())
-                    {
-                    }
-                    clip.stop();
-                } catch (Exception e) {
-                    System.err.println(e.getMessage());
-                }
-            }
-        });
-        audioThread.start();
         System.gc();
     }
 
@@ -443,7 +419,7 @@ public class GUI extends JFrame implements MouseListener, ActionListener {
                 timePassed = 0;
                 graphicsTimer.stop();
                 gameFinished = false;
-                timer = new Timer(1000,timerAction);
+                timer = new Timer(1000,ev -> getTime());
                 time.setText("Time: 0s");
                 //Make all buttons green and clickable again
                 for (int i = 0; i < sizeY; i++) {
