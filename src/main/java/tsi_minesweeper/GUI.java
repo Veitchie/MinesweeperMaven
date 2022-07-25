@@ -3,14 +3,11 @@ package tsi_minesweeper;
 import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
+import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.Random;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.*;
-import java.io.File;
-import java.io.IOException;
-import javax.sound.sampled.LineEvent.Type;
 
 public class GUI extends JFrame implements MouseListener, ActionListener {
 
@@ -339,7 +336,7 @@ public class GUI extends JFrame implements MouseListener, ActionListener {
 
     public void generateGame(int[] userInputs) {
         //Create bombs
-        Random rand = new Random();
+        SecureRandom rand = new SecureRandom();
         for (int i = 0; i < numBombs; i++) {
             int x = rand.nextInt(sizeX - 1);
             int y = rand.nextInt(sizeY - 1);
@@ -519,7 +516,7 @@ public class GUI extends JFrame implements MouseListener, ActionListener {
 
                                 //Randomise bombs
                                 ArrayList<int[]> temp = new ArrayList<>();
-                                Random rand = new Random();
+                                SecureRandom rand = new SecureRandom();
                                 while(bombs.size() > 0){
                                     int tempRand = rand.nextInt(bombs.size());
                                     temp.add(bombs.get(tempRand));
